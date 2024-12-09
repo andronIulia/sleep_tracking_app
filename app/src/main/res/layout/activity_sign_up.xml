@@ -7,6 +7,18 @@
     android:layout_height="match_parent"
     android:padding="16dp"
     tools:context=".SignUpActivity">
+    <TextView
+        android:id="@+id/signUpHeader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Create Account"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@color/primaryColor"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="32dp" />
     <EditText
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -40,7 +52,8 @@
         android:layout_height="wrap_content"
         android:id="@+id/SignUpButton"
         android:text="Sign Up"
-        android:backgroundTint="@color/dark_grey"
+        android:backgroundTint="@color/primaryColor"
+        android:textColor="@android:color/white"
         android:layout_marginTop="50dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
@@ -56,7 +69,8 @@
         android:text="Already registered? Login"
         android:textSize="18sp"
         android:gravity="center"
-        android:textColor="@color/dark_grey"
+        android:textColor="@color/secondaryColor"
+        android:textStyle="italic"
         android:layout_marginTop="70dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
