@@ -60,6 +60,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.firebase.database)
     //implementation(libs.androidx.runtime.android)
+    implementation(libs.androidx.connect.client)
 
     implementation(libs.androidx.ui)
     implementation(libs.androidx.material3)

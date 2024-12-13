@@ -9,11 +9,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-val MidnightBlue = Color(0xFF121A2E) // Deep, calming blue
-val MintGreen = Color(0xFF80CBC4)    // Gentle teal for accents
+val MidnightBlue = Color(0xFF262B40) // Deep, calming blue
+val MintGreen = Color(0xFF06457F)    //  blue
 val Lavender = Color(0xFFC5CAE9)     // Subtle lavender for contrast
-val SoftWhite = Color(0xFFECEFF1)    // Light text color
-val DimGrey = Color(0xFF37474F)      // Neutral grey for less important elements
+val SoftWhite = Color(0xFFA8C4EC)    // Light text color(light blue)
+val DimGrey = Color(0xFF5379AE)      //light blue
 
 
 private val DarkColorScheme = darkColorScheme(
