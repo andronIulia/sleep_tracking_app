@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.project_sma.databinding.ActivitySignUpBinding
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -17,8 +18,7 @@ import com.google.firebase.database.ValueEventListener
 class SignUpActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySignUpBinding
-    private lateinit var firebaseDatabase: FirebaseDatabase
-    private lateinit var databaseReference: DatabaseReference
+    private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,8 +31,7 @@ class SignUpActivity : AppCompatActivity() {
             insets
         }
 
-        firebaseDatabase = FirebaseDatabase.getInstance()
-        databaseReference = firebaseDatabase.reference.child("users")
+        auth = FirebaseAuth.getInstance()
 
         binding.SignUpButton.setOnClickListener{
             val signUpUsername = binding.signUpUsername.text.toString()
@@ -52,26 +51,18 @@ class SignUpActivity : AppCompatActivity() {
         }
     }
 
-    private fun signUpUser(username: String, password:String){
-        databaseReference.orderByChild("username").equalTo(username).addListenerForSingleValueEvent(object:ValueEventListener{
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                if(!dataSnapshot.exists()){
-                    val id = databaseReference.push().key
-                    val userData = UserData(id,username,password)
-                    databaseReference.child(id!!).setValue(userData)
+    private fun signUpUser(email: String, password:String){
+        auth.createUserWithEmailAndPassword(email, password)
+            .addOnCompleteListener{ task ->
+                if(task.isSuccessful){
                     Toast.makeText(this@SignUpActivity,"Sign Up successful",Toast.LENGTH_SHORT).show()
                     startActivity(Intent(this@SignUpActivity,LoginActivity::class.java))
                     finish()
-                } else{
-                    Toast.makeText(this@SignUpActivity,"User exists",Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this@SignUpActivity, "Authentication failed.", Toast.LENGTH_SHORT).show();
+
                 }
-
             }
-
-            override fun onCancelled(databaseError: DatabaseError) {
-                Toast.makeText(this@SignUpActivity,"Database Error: ${databaseError.message}",Toast.LENGTH_SHORT).show()
-            }
-        })
     }
 
 

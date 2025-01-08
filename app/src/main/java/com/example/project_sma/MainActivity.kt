@@ -1,5 +1,7 @@
 package com.example.project_sma
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,24 +39,49 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.startActivity
+import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var auth: FirebaseAuth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            SleepTrackerTheme {
-                SleepMonitorScreen()
+        auth = FirebaseAuth.getInstance()
+        val currentUser = auth.currentUser
+        if(currentUser == null){
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+        } else {
+            setContent {
+                SleepTrackerTheme {
+                    SleepMonitorScreen(onLogout = { handleLogout(this) })
+                }
             }
         }
     }
+     private fun handleLogout(context: Activity) {
+        FirebaseAuth.getInstance().signOut() // Sign out the user
+        val intent = Intent(context, LoginActivity::class.java)
+        context.startActivity(intent)
+        context.finish() // Close the current activity
+    }
+
+
 }
 
 @Composable
-fun SleepMonitorScreen(){
+fun SleepMonitorScreen(onLogout:() ->Unit){
     var isMonitoring by remember { mutableStateOf(false) }
     var sleepDuration by remember { mutableStateOf(0) }
     var sleepQuality by remember { mutableStateOf("Not registered") }
@@ -62,7 +90,7 @@ fun SleepMonitorScreen(){
     var showDialog by remember { mutableStateOf(false) }
     var showLogoutDialog by remember { mutableStateOf(false) }
     var dropdownExpanded by remember { mutableStateOf(false) }
-
+    val dropdownAnchor = remember { mutableStateOf<Offset?>(null) }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -82,28 +110,38 @@ fun SleepMonitorScreen(){
                 style = MaterialTheme.typography.headlineLarge,
                 modifier = Modifier.weight(1f)
             )
-            IconButton(onClick = { dropdownExpanded = true }) {
+            Box(
+                modifier = Modifier
+                    .onGloballyPositioned { coordinates ->
+                        val position = coordinates.positionInRoot()
+                        dropdownAnchor.value = position
+                    }
+            ) {
+            IconButton(onClick = { dropdownExpanded = !dropdownExpanded }) {
                 Icon(
                     imageVector = Icons.Default.Menu,
                     contentDescription = "Menu",
                     modifier = Modifier.size(24.dp)
                 )
             }
+            }
             DropdownMenu(
                 expanded = dropdownExpanded,
-                onDismissRequest = { dropdownExpanded = false }
+                onDismissRequest = { dropdownExpanded = false } ,
+                        modifier = Modifier
+                    .background(MaterialTheme.colorScheme.surface)
+                    .clip(RoundedCornerShape(8.dp))
             ) {
                 DropdownMenuItem(
-                    text = { Text("Log Out", fontSize = 16.sp) },
+                    text = { Text("Log Out", fontSize = 16.sp,color = MaterialTheme.colorScheme.primary) },
                     onClick = {
                         dropdownExpanded = false
                         showLogoutDialog = true
-                    }
+                    },
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
             }
         }
-
-
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -141,39 +179,8 @@ fun SleepMonitorScreen(){
         SleepDataCard(title = "SpO2", value = "$spO2%")
         Spacer(modifier = Modifier.height(16.dp))
 
-        /*Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.padding(vertical = 20.dp)
-        ) {
-            CircularProgressIndicator(
-                progress = { spO2 / 100f },
-                modifier = Modifier.size(100.dp),
-                color = if (spO2 >= 95) Color.Green else Color.Red,
-                trackColor = ProgressIndicatorDefaults.circularIndeterminateTrackColor,
-            )
-            Text(
-                text = "$spO2%",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-        }*/
+        // asta poate vreau sa o pastrez Spacer(modifier = Modifier.height(30.dp))
 
-        Spacer(modifier = Modifier.height(30.dp))
-
-        //Graph
-        /*Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-                .padding(16.dp)
-                .background(
-                    MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(12.dp)
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(text = "Graph to be implemented", color = Color.DarkGray)
-        }*/
     }
 
     if(showDialog){
@@ -219,6 +226,30 @@ fun SleepMonitorScreen(){
             }
         )
     }
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = { Text(text = "Log Out") },
+            text = { Text("Are you sure you want to log out?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showLogoutDialog = false
+                        onLogout()
+                    }
+                ) {
+                    Text("Yes")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { showLogoutDialog = false }
+                ) {
+                    Text("No")
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -251,11 +282,13 @@ fun SleepDataCard(title: String, value: String){
     }
 }
 
+
+
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
     SleepTrackerTheme {
-        SleepMonitorScreen()
+        SleepMonitorScreen(onLogout={})
     }
 }
 
