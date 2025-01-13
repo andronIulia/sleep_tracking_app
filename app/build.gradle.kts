@@ -1,7 +1,10 @@
 plugins {
+    id("com.google.devtools.ksp") version "2.0.21-1.0.27"
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.google.gms.google.services)
+    alias(libs.plugins.kotlin.compose)
+
 }
 
 android {
@@ -10,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.project_sma"
-        minSdk = 26
+        minSdk = 34
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -66,6 +69,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.foundation.layout.android)
+    implementation(libs.androidx.room.ktx)
     debugImplementation(libs.androidx.ui.tooling)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
@@ -79,4 +83,22 @@ dependencies {
 
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
+
+    implementation (libs.androidx.lifecycle.viewmodel.compose)
+    implementation (libs.androidx.lifecycle.viewmodel.ktx)
+    implementation (libs.kotlinx.coroutines.android)
+
+    //implementation (libs.androidx.connect.client)
+    implementation (libs.androidx.lifecycle.runtime.ktx)
+
+    implementation (libs.androidx.fragment.ktx)
+    implementation (libs.androidx.navigation.compose)
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+    implementation (libs.mpandroidchart)
+    //implementation (libs.compose.charts)
+    implementation (libs.androidx.ui.tooling.preview.v176)
+    implementation (libs.compose.m3)
+    implementation (libs.core)
+    //implementation (libs.ehsannarmani.compose.charts)
 }
