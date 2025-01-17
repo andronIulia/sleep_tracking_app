@@ -108,7 +108,8 @@ fun HealthApp(
     val context = LocalContext.current
     val statisticsViewModel: StatisticsViewModel = viewModel(
         factory = StatisticsViewModelFactory(
-            context.applicationContext as Application
+            context.applicationContext as Application,
+            viewModel.healthConnectManager
             )
     )
     val permissionsGranted by viewModel.permissionsGranted.collectAsState()

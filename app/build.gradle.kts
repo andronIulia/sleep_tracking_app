@@ -101,4 +101,7 @@ dependencies {
     implementation (libs.compose.m3)
     implementation (libs.core)
     //implementation (libs.ehsannarmani.compose.charts)
+    //implementation (libs.kotlinx.serialization.json)
+    //implementation (libs.kotlinx.dataframe)
+    //implementation (libs.plotly.kotlin)
 }

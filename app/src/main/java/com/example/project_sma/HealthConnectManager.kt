@@ -107,4 +107,56 @@ class HealthConnectManager(private val context: Context) {
             -1
         }
     }
+
+    suspend fun fetchWeeklyHealthData(): List<SleepDataEntity> {
+        val now = Instant.now()
+        val startOfWeek = now.minus(Duration.ofDays(7))
+        val timeRangeFilter = TimeRangeFilter.between(startOfWeek, now)
+
+        val sleepData = fetchWeeklySleepData(timeRangeFilter)
+        val heartRateData = fetchWeeklyHeartRateData(timeRangeFilter)
+        val spO2Data = fetchWeeklySpO2Data(timeRangeFilter)
+
+        return sleepData.map { (date, duration) ->
+            SleepDataEntity(
+                date = date,
+                sleepDuration = duration,
+                sleepQuality = "Good",
+                heartRate = heartRateData[date] ?: 0,
+                spO2 = spO2Data[date] ?: -1
+            )
+        }
+    }
+    private suspend fun fetchWeeklySleepData(timeRangeFilter: TimeRangeFilter): Map<String, Int> {
+        val request = ReadRecordsRequest(SleepSessionRecord::class, timeRangeFilter)
+        val response = healthConnectClient.readRecords(request)
+
+        return response.records.groupBy {
+            it.startTime.atZone(java.time.ZoneOffset.UTC).toLocalDate().toString()
+        }.mapValues { (_, sessions) ->
+            sessions.sumOf { Duration.between(it.startTime, it.endTime).toHours().toInt() }
+        }
+    }
+    private suspend fun fetchWeeklyHeartRateData(timeRangeFilter: TimeRangeFilter): Map<String, Int> {
+        val request = ReadRecordsRequest(HeartRateRecord::class, timeRangeFilter)
+        val response = healthConnectClient.readRecords(request)
+
+        return response.records.groupBy {
+            it.startTime.atZone(java.time.ZoneOffset.UTC).toLocalDate().toString()
+        }.mapValues { (_, records) ->
+            records.flatMap { it.samples.map { sample -> sample.beatsPerMinute } }
+                .average().toInt()
+        }
+    }
+    private suspend fun fetchWeeklySpO2Data(timeRangeFilter: TimeRangeFilter): Map<String, Int> {
+        val request = ReadRecordsRequest(OxygenSaturationRecord::class, timeRangeFilter)
+        val response = healthConnectClient.readRecords(request)
+
+        return response.records.groupBy {
+            it.time.atZone(java.time.ZoneOffset.UTC).toLocalDate().toString()
+        }.mapValues { (_, records) ->
+            records.mapNotNull { it.percentage?.value }
+                .average().toInt()
+        }
+    }
 }

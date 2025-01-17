@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class SleepMonitorViewModel(
-    private val healthConnectManager: HealthConnectManager
+    val healthConnectManager: HealthConnectManager
 ) : ViewModel() {
     private val _healthData = MutableStateFlow<SleepDataEntity?>(null)
     val healthData: StateFlow<SleepDataEntity?> = _healthData
